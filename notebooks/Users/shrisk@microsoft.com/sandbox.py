@@ -49,3 +49,10 @@ display(avrodf)
 
 # COMMAND ----------
 
+spark.sql("drop table if exists AggregatedSongData")
+
+#save the aggregated avro file as a global table
+avrodf.write.saveAsTable("AggregatedSongData") 
+
+# COMMAND ----------
+
