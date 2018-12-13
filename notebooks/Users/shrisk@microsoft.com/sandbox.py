@@ -1,19 +1,5 @@
 # Databricks notebook source
-import sys
-import functools
-import warnings
-
-if sys.version < "3":
-    from itertools import imap as map
-
-if sys.version >= '3':
-    basestring = str
-
-from pyspark import since, SparkContext
-from pyspark.rdd import ignore_unicode_prefix, PythonEvalType
-from pyspark.sql.column import Column, _to_java_column, _to_seq, _create_column_from_literal
-from pyspark.sql.dataframe import DataFrame
-from pyspark.sql.types import StringType, DataType
+from pyspark.sql import *
 
 # COMMAND ----------
 
@@ -29,8 +15,9 @@ display(smallradio.select("*"))
 # COMMAND ----------
 
 #display(smallradio.select(pyspark.sql.functions.substring("location", pyspark.sql.functions.length("location")-1, 2)).alias("l"))
-statecoldf = smallradio.selectExpr("right(location,  2)").alias("state")
-display(statecoldf)
+state_df = smallradio.selectExpr("right(location,  2) as state", "length").alias("state")
+agg_df = state_df.groupby("state").avg("length")
+display(agg_df)
 
 # COMMAND ----------
 
