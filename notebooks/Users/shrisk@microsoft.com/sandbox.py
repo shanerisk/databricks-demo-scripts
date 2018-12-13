@@ -15,9 +15,9 @@ display(smallradio.select("*"))
 # COMMAND ----------
 
 #display(smallradio.select(pyspark.sql.functions.substring("location", pyspark.sql.functions.length("location")-1, 2)).alias("l"))
-state_df = smallradio.selectExpr("right(location,  2) as state", "length").alias("state")
-agg_df = state_df.groupby("state").avg("length")
-display(agg_df)
+state_df = smallradio.selectExpr("right(location,  2) as state", "length")
+aliased_df = state_df.groupby("state").avg("length").withColumnRenamed("avg(length)", "AverageSongLength")
+display(aliased_df)
 
 # COMMAND ----------
 
@@ -31,6 +31,21 @@ smallradio.registerTempTable("databricks_song_table")
 # MAGIC select right(location, 2) as state, avg(length) as AverageSongLength
 # MAGIC from databricks_song_table
 # MAGIC Group by right(location, 2)
+
+# COMMAND ----------
+
+#lets write this really interesting data back to an avro file
+# Remove the file if it exists
+myfilenamepath = "/myoutput/aggregated_data.avro"  
+dbutils.fs.rm(myfilenamepath, True)
+
+aliased_df.write.format("com.databricks.spark.avro").save(myfilenamepath)
+
+# COMMAND ----------
+
+#to get the aggregated data from avro file
+avrodf = spark.read.format("com.databricks.spark.avro").load(myfilenamepath)
+display(avrodf)
 
 # COMMAND ----------
 
